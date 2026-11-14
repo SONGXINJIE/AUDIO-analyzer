@@ -54,7 +54,7 @@ dev = [
     "pytest-mock>=3.12,<4",
     "pytest-xdist>=3.5,<4",
     "ruff>=0.4,<1",
-    "mypy>=1.9,<2",
+    "mypy>=1.9,<3",
 ]
 
 [project.urls]
