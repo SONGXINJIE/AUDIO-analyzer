@@ -30,7 +30,7 @@ dependencies = [
     "soundfile>=0.12,<1",
     "psutil>=5.9,<7",
     "numba>=0.61,<0.67",
-    "llvmlite>=0.44,<0.47",
+    "llvmlite>=0.44,<0.51",
     "matplotlib>=3.8,<4",
 ]
 
