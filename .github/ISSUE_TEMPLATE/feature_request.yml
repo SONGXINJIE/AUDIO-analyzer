@@ -1,0 +1,38 @@
+name: Feature request
+description: Suggest a capability or improvement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提交前请先阅读设计规格中的「目标 / 非目标 / 验收标准」，避免与既定范围冲突。
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem would this solve, and for whom?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Describe the behaviour, the affected layer, and any contract impact.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: This does not conflict with the documented non-goals.
+          required: true
+        - label: I checked the design specification for an existing decision.
+          required: true

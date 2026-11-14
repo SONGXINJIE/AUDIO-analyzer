@@ -1,0 +1,194 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "audio-analyzer"
+version = "0.1.0"
+description = "Extensible CPU-only audio analysis platform with a plugin-based architecture"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = {text = "MIT"}
+authors = [
+    {name = "Audio Analyzer Team"},
+]
+keywords = ["audio", "analysis", "gpu", "cuda", "dsp"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+]
+
+dependencies = [
+    "numpy>=1.26,<3",
+    "librosa>=0.11,<0.12",
+    "scipy>=1.12,<2",
+    "pydantic>=2.0,<3",
+    "pydantic-settings>=2.0,<3",
+    "click>=8.0,<9",
+    "pyyaml>=6.0,<7",
+    "soundfile>=0.12,<1",
+    "psutil>=5.9,<7",
+    "numba>=0.61,<0.67",
+    "llvmlite>=0.44,<0.47",
+    "matplotlib>=3.8,<4",
+]
+
+[project.optional-dependencies]
+gpu = [
+    "cupy-cuda11x>=13.0,<14",
+]
+optional = [
+    "praat-parselmouth>=0.4.7,<1",
+    "pyloudnorm>=0.1,<1",
+    "webrtcvad>=2.0,<3",
+    "pyarrow>=14.0,<20",
+    "nvidia-ml-py>=12.0,<13",
+    "mutagen>=1.47,<2",
+    "dtw-python>=1.3,<2",
+    "audioflux>=0.1,<1",
+]
+dev = [
+    "pytest>=8.0,<9",
+    "pytest-cov>=5.0,<6",
+    "pytest-mock>=3.12,<4",
+    "pytest-xdist>=3.5,<4",
+    "ruff>=0.4,<1",
+    "mypy>=1.9,<2",
+]
+
+[project.urls]
+Homepage = "https://github.com/SONGXINJIE/AUDIO-analyzer"
+Repository = "https://github.com/SONGXINJIE/AUDIO-analyzer"
+Issues = "https://github.com/SONGXINJIE/AUDIO-analyzer/issues"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+# scripts/ 是 GPU 真实环境验证工具 (smoke test / benchmark / chroma 漂移验证).
+# 设计上需要 sys.path.insert(0, ROOT) 后才能 import audio_analyzer,
+# 故 E402 (module level import not at top of file) 是设计意图而非代码缺陷.
+# 这些脚本不在生产路径, 也未被 pytest 收集, 排除 ruff 检查.
+extend-exclude = ["scripts"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "N", "B", "UP", "SIM", "C4", "RUF",
+]
+ignore = [
+    "RUF001", "RUF002", "RUF003",
+    # 科学计算领域约定俗成的命名：S(频谱)、S_db(dB频谱)、ndarray(cupy兼容)
+    "N801", "N806",
+    # 装饰器内部使用 TypeVar 单类型参数（ParamSpec 已被禁用以避免太复杂）
+    "UP047",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+show_error_codes = true
+pretty = true
+warn_unreachable = true
+warn_unused_ignores = true
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+mypy_path = "src"
+# numpy.ndarray 是 ``ndarray[Any, dtype[Scalar]]`` 的泛型别名。
+# 在数值计算代码库中强制要求每个 ``np.ndarray`` 都写出 dtype 参数
+# （如 ``np.ndarray[np.float32]``）过于冗长，且不会带来运行时类型安全收益——
+# numpy 2.x 在运行时本就以 dtype 决定元素行为，类型注解仅用于 IDE/检查器辅助。
+# 与 ``disallow_any_generics = false`` 同等性质：声明「该错误码不适用本项目」
+# 而非在代码里写 ``# type: ignore`` 或 ``Any`` 绕过。
+# 参考 numpy 官方 typing 文档（numpy 2.0 推荐 ``numpy.typing.NDArray`` 用法）。
+disable_error_code = ["type-arg"]
+# numpy ndarray 是泛型类型，但在数值计算代码库中强制要求类型参数（ndarray[Any, Any]）
+# 过于冗长且无实际收益。全局关闭 disallow_any_generics，
+# 与 numpy 社区实践一致（numpy/mypy 插件也推荐此配置）。
+disallow_any_generics = false
+[[tool.mypy.overrides]]
+module = [
+    "cupy.*",
+    "librosa.*",
+    "noisereduce.*",
+    "parselmouth.*",
+    "pyloudnorm.*",
+    "webrtcvad.*",
+    "pyarrow.*",
+    "nvidia_ml_py.*",
+    "mutagen.*",
+    "dtw.*",
+    "audioflux.*",
+    "soundfile.*",
+    "psutil.*",
+    "scipy.*",
+    "yaml.*",
+    "matplotlib.*",
+    "numba.*",
+    "llvmlite.*",
+]
+ignore_missing_imports = true
+
+# GPU 后端：依赖 cupy，无法在无 CUDA 环境下做 strict 类型检查
+[[tool.mypy.overrides]]
+module = "audio_analyzer.backend.cuda"
+disallow_untyped_decorators = false
+disallow_any_generics = false
+warn_unused_ignores = false
+
+# Numba JIT 内核：numba.jit 装饰器必然返回 Any，无法做 strict 检查
+[[tool.mypy.overrides]]
+module = "audio_analyzer.backend._numba_kernels"
+disallow_any_decorated = false
+disallow_any_generics = false
+warn_return_any = false
+warn_unused_ignores = false
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-ra",
+    "-q",
+    "--strict-markers",
+    "--cov=src/audio_analyzer",
+    "--cov-report=term-missing",
+    # FINAL-051 修复：覆盖率门槛提升到 70%（规范要求）。
+    # 当前实际覆盖率 ~83%（2026-07-20 测量：TOTAL 83.34% / 5294 statements / 882 missed）。
+    # 分阶段提升计划（70 → 80 → 85），见 FINAL-051 工单。
+    "--cov-fail-under=70",
+]
+markers = [
+    "slow: 慢速测试",
+    "gpu: 需要真实 GPU 的测试",
+    "integration: 集成测试",
+]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning",
+    # R5-05 修复: ComplexWarning 是 librosa.stft 内部 cast 复数到实数的
+    # 数值精度噪音, 触发路径稳定 (cache miss 时 stft 必发), 不暴露业务
+    # bug. 但 filterwarnings="error" 会让 ComplexWarning 在测试外
+    # raise, 与 ``pytest.warns(ComplexWarning)`` 内部 "always" 冲突,
+    # 致合集跑时 cache miss 路径被 raise 中断, pytest.warns 拿不到
+    # warning. 单独豁免为 ignore, 让 warning 正常发出但不 raise.
+    "ignore::numpy.exceptions.ComplexWarning",
+]
+
+[tool.coverage.run]
+source = ["src/audio_analyzer"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+    "raise NotImplementedError",
+]

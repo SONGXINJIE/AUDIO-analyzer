@@ -1,0 +1,12 @@
+# Audio Analyzer 生产配置
+# 继承 default.yaml，启用大缓存和更长 TTL 优化批量分析吞吐
+
+inherit: default.yaml
+
+profile: prod
+description: "生产配置（大缓存、CPU）"
+
+cache:
+  enabled: true
+  memory_size: 64           # 生产环境大缓存，提升重复文件命中率
+  disk_ttl_days: 30         # 30 天 TTL，减少重复分析开销

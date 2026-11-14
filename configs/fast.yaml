@@ -1,0 +1,36 @@
+# Audio Analyzer 快速分析配置
+# CPU-first 极速分析（FastCPUBackend + Numba JIT + SpectralCache）
+# 设计文档：《CPU-First 极速分析器》
+#
+# 核心优化：
+#   - FastCPUBackend 通过 Numba JIT 加速 STFT
+#   - SpectralCache 复用频谱中间结果，避免重复计算
+#   - 精简特征集（dynamics/timbre/rhythm/quality）降低计算量
+
+profile: fast
+description: "CPU-first 极速分析（FastCPUBackend + Numba JIT）"
+
+audio:
+  target_sr: 22050
+  mono: true
+
+preprocess:
+  steps: [mono, normalize]  # 跳过 resample/trim，追求首响延迟最低
+
+features:
+  enabled: [dynamics, timbre, rhythm, quality]  # 4 个核心特征，非全量
+
+backend:
+  device: cpu
+  default_backend: fast_cpu  # 启用 FastCPUBackend（Numba JIT + SpectralCache）
+  gpu_enabled: false
+  precision: float32
+  memory_limit_mb: 1536      # M5: 补齐字段（GTX 950 上限，ADR-002）
+
+cache:
+  enabled: true
+  memory_size: 32            # SpectralCache 复用频谱中间结果
+  disk_ttl_days: 7
+
+router:
+  max_workers: 3             # 线程池最大 worker 数（M1: 已接通到 AnalysisPipeline）

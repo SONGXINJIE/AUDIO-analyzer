@@ -1,0 +1,24 @@
+# Audio Analyzer GPU 专用配置
+# 继承 default.yaml，启用 CUDA 加速
+# 硬件约束：GTX 950 (2GB VRAM) + CUDA 11.8（见 ADR-0001 / ADR-002）
+#
+# 注意：memory_limit_mb 必须与目标硬件匹配，超过显存上限会触发 OOM 自动回退 CPU
+
+inherit: default.yaml
+
+profile: gpu
+description: "GPU 加速配置（CUDA 11.8 + GTX 950）"
+
+audio:
+  target_sr: 44100          # GPU 保留原始采样率，利用完整频谱信息
+
+backend:
+  device: cuda              # 强制 CUDA 设备
+  default_backend: cuda
+  gpu_enabled: true
+  memory_limit_mb: 1536     # GTX 950 2GB 上限（ADR-002，M6 修复：8192→1536）
+
+cache:
+  enabled: true
+  memory_size: 32           # GPU 缓存适中，避免显存压力
+  disk_ttl_days: 7

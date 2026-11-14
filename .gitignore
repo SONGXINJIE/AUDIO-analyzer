@@ -1,0 +1,74 @@
+# Python
+__pycache__/
+*.py[cod]
+*.class
+*.so
+.Python
+
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# 测试与覆盖率
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# 类型检查缓存
+.mypy_cache/
+.pyre/
+.pytype/
+
+# Ruff 缓存
+.ruff_cache/
+
+# 构建产物
+build/
+dist/
+*.egg-info/
+*.egg
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 操作系统
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 项目特定
+output/
+*.pkl
+.benchmarks/
+
+# 音频素材：商业版权音源一律不入库（仅保留根目录的合成测试 fixture）
+audio-test/
+
+# 内部项目数据（工作日志等，不随开源仓库公开）
+.workbuddy/
+
+# 本地环境与密钥（防误提交）
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.log
+*.tmp
+*.bak
+
+# Numba 编译缓存（非确定性产物，与机器/版本绑定）
+*.nbi
+*.nbc

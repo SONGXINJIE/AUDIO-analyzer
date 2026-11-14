@@ -1,0 +1,35 @@
+# 所有 hook 均为 local，直接调用 uv.lock 锁定的工具，不引入额外 hook 仓库。
+# 安装：uv pip install pre-commit && pre-commit install
+# 说明：pre-commit 仅作为本地便捷检查，权威门禁以 .github/workflows/ci.yml 为准。
+minimum_pre_commit_version: "3.0.0"
+
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --force-exclude
+        language: system
+        types: [python]
+        pass_filenames: true
+
+      - id: ruff-format
+        name: ruff format --check
+        entry: uv run ruff format --check
+        language: system
+        types: [python]
+        pass_filenames: true
+
+      - id: mypy
+        name: mypy strict
+        entry: uv run mypy
+        language: system
+        types: [python]
+        pass_filenames: false
+        args: [src]
+
+      - id: whitespace
+        name: git diff --cached --check
+        entry: git diff --cached --check
+        language: system
+        pass_filenames: false

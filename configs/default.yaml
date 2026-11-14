@@ -1,0 +1,42 @@
+# Audio Analyzer 默认配置
+# 被所有 profile 继承的基础配置（M5: 统一新式嵌套 schema）
+#
+# schema 字段说明：
+#   audio:        音频预处理参数（采样率、声道）
+#   preprocess:   预处理步骤序列
+#   features:     启用的特征提取器列表
+#   backend:      执行后端策略（设备、GPU、精度、显存）
+#   cache:        缓存配置（内存 LRU + 磁盘 TTL）
+#   router:       特征提取路由（并行策略）
+
+profile: default
+description: "Audio Analyzer 默认配置（被所有 profile 继承）"
+
+audio:
+  target_sr: 22050
+  mono: true
+
+preprocess:
+  steps: [mono, resample, normalize, trim]
+
+features:
+  enabled: [rhythm, timbre, dynamics, harmony, structure, vocal, mood_genre, quality]
+
+backend:
+  device: cpu               # 设备选择策略: auto/cpu/cuda/fast_cpu
+  default_backend: cpu      # 默认 backend 实现: cpu/cuda/fast_cpu
+  gpu_enabled: false        # 是否启用 GPU 加速
+  precision: float32        # 计算精度: float32/float64
+  memory_limit_mb: 1536     # GPU 显存上限（GTX 950 2GB，ADR-002）
+
+cache:
+  enabled: false
+  memory_size: 32           # 内存 LRU 保留最近 N 个分析中间结果
+  disk_ttl_days: 7          # 磁盘缓存 TTL（天）
+  directory: "~/.cache/audio-analyzer"
+  ttl_seconds: 604800       # 缓存 TTL（秒，7 天；与 disk_ttl_days 二选一，秒级更精确，向后兼容）
+  max_size_mb: 1024         # 缓存最大大小（MB，0 表示不限制；超限按 FIFO 淘汰）
+  isolate_by_backend: true  # 按 backend 隔离缓存键，避免 CPU/GPU 结果互相覆盖
+
+router:
+  max_workers: 3            # 线程池最大 worker 数（M1: 已接通到 AnalysisPipeline）

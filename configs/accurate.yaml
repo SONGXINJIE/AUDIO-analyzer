@@ -1,0 +1,52 @@
+# Audio Analyzer 精确分析配置
+# 全特征精确分析（FastCPUBackend + Numba JIT + 完整特征集）
+#
+# 与 fast.yaml 的差异：
+#   - 完整预处理链（mono/resample/normalize/trim）
+#   - 全部 16 个特征提取器（8 核心 + 8 高级）
+#   - 较小缓存（memory_size=16），因特征多、中间结果占用大
+
+profile: accurate
+description: "全特征精确分析（FastCPUBackend）"
+
+audio:
+  target_sr: 22050
+  mono: true
+
+preprocess:
+  steps: [mono, resample, normalize, trim]  # 完整预处理链
+
+features:
+  enabled:
+    - dynamics
+    - timbre
+    - rhythm
+    - quality
+    - harmony
+    - structure
+    - vocal
+    - mood_genre
+    # 阶段 21：新增 8 个高级特征提取器（设计文档 §2.1）
+    - tonality
+    - dynamics_adv
+    - spectral_adv
+    - stereo
+    - hpss
+    - psychoacoustic
+    - onset_adv
+    - instrument_basic
+
+backend:
+  device: cpu
+  default_backend: fast_cpu  # 启用 FastCPUBackend
+  gpu_enabled: false
+  precision: float32
+  memory_limit_mb: 1536      # M5: 补齐字段（GTX 950 上限，ADR-002）
+
+cache:
+  enabled: true
+  memory_size: 16            # 特征多，中间结果大，缓存项数适当降低
+  disk_ttl_days: 7
+
+router:
+  max_workers: 3             # 线程池最大 worker 数（M1: 已接通到 AnalysisPipeline）

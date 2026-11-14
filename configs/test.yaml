@@ -1,0 +1,15 @@
+# Audio Analyzer 测试配置
+# 继承 default.yaml，禁用缓存和 GPU 确保测试确定性和可复现性
+
+inherit: default.yaml
+
+profile: test
+description: "测试配置（禁用缓存和 GPU，确保确定性）"
+
+cache:
+  enabled: false            # 测试禁用缓存，避免跨用例污染
+
+backend:
+  device: cpu               # 强制 CPU，确保测试环境无关性
+  default_backend: cpu
+  gpu_enabled: false

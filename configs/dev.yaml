@@ -1,0 +1,12 @@
+# Audio Analyzer 开发配置
+# 继承 default.yaml，开启小缓存用于本地调试
+
+inherit: default.yaml
+
+profile: dev
+description: "开发配置（小缓存、CPU）"
+
+cache:
+  enabled: true
+  memory_size: 16           # 开发环境小缓存，快速验证
+  disk_ttl_days: 1          # 1 天 TTL，避免陈旧缓存干扰调试

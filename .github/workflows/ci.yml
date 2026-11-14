@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, type check and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Repository hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -Ei '\.(flac|mp3|ogg|m4a)$'; then
+            echo "::error::Commercial audio assets must not be committed"
+            exit 1
+          fi
+          if git ls-files '*.wav' | grep -Ev '^(test_audio|_test_meta)\.wav$'; then
+            echo "::error::Only the two synthetic WAV fixtures are allowed"
+            exit 1
+          fi
+          big=$(find . -path ./.git -prune -o -path ./.venv -prune -o -type f -size +5M -print)
+          if [ -n "$big" ]; then
+            echo "::error::Files over 5 MiB are not allowed: $big"
+            exit 1
+          fi
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: python -m pip install uv
+
+      - name: Sync locked dependencies
+        run: uv sync --frozen --extra dev
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format
+        run: uv run ruff format --check .
+
+      - name: Mypy
+        run: uv run mypy src
+
+      - name: Pytest
+        if: hashFiles('tests/**/*.py') != ''
+        run: uv run pytest -q

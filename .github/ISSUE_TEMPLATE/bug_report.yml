@@ -1,0 +1,45 @@
+name: Bug report
+description: Report a reproducible defect
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢提交缺陷报告。安全漏洞请使用 SECURITY.md 中的私密渠道，不要开公开 Issue。
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Which release, or which commit SHA?
+      placeholder: "0.1.0 or abc1234"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the observed behaviour and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Minimal commands, a failing test, or a sample input description.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python version, uv version.
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I did not attach copyrighted audio material to this report.
+          required: true
